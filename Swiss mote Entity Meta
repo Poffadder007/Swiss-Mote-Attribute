@@ -1,0 +1,81 @@
+
+  
+class​ ​MetaTestEntity​(​metaclass​=​base​SwissmoteEntityMeta​): 
+ ​    ​id​ ​=​ ​fields​.​IntegerField​() 
+ ​    ​string​ ​=​ ​fields​.​StringField​() 
+ ​    ​boolean​ ​=​ ​fields​.​BooleanField​() 
+ ​    ​mapped​ ​=​ ​fields​.​MappingField​(​RandomEntity​, ​'mapping_field'​) 
+  
+  
+ ​class​ ​ExtendedMetaTestEntity​(​MetaTestEntity​): 
+ ​    ​another_string​ ​=​ ​fields​.​StringField​() 
+ ​    ​another_mapped​ ​=​ ​fields​.​MappingField​(​RandomEntity​, ​'another_mapping_field'​) 
+  
+  
+ ​class​ ​Test SwissmoteEntityMeta​: 
+ ​    ​@​staticmethod 
+ ​    ​def​ ​set_fields_names​(​fields​): 
+ ​        ​for​ ​name​, ​field​ ​in​ ​fields​.​items​(): 
+ ​            ​field​.​name​ ​=​ ​name 
+  
+ ​    ​def​ ​test_make_signature​(​self​): 
+ ​        ​fields_set​ ​=​ { 
+ ​            ​'id'​: ​fields​.​IntegerField​(), 
+ ​            ​'str'​: ​fields​.​StringField​(​default​=​'asd'​), 
+ ​            ​'req_str'​: ​fields​.​StringField​(​required​=​True​), 
+ ​        } 
+  
+ ​        ​self​.​set_fields_names​(​fields_set​) 
+  
+ ​        ​sig​ ​=​ ​base​.. SwissmoteEntityMeta​.​_make_signature​(​fields_set​) 
+ ​        ​sig_params​ ​=​ ​sig​.​parameters 
+  
+ ​        ​assert​ ​len​(​sig_params​) ​==​ ​2 
+ ​        ​assert​ ​sig_params​[​'str'​].​default​ ​==​ ​'asd' 
+ ​        ​assert​ ​'id'​ ​not​ ​in​ ​sig_params 
+  
+ ​    ​def​ ​test_make_fields​(​self​): 
+ ​        ​fields_set​ ​=​ { 
+ ​            ​'id'​: ​fields​.​IntegerField​(), 
+ ​            ​'str'​: ​fields​.​StringField​(​default​=​'asd'​), 
+ ​            ​'req_str'​: ​fields​.​StringField​(​required​=​True​), 
+ ​            ​'something_random'​: ​'asdf' 
+ ​        } 
+  
+ ​        ​result​ ​=​ ​base​.. SwissMoteEntityMeta​.​_make_fields​(​fields_set​, [​RandomEntity​]) 
+  
+ ​        ​# Four because there is one Field taken from RandomEntity and 'something_random' is ignored 
+ ​        ​assert​ ​len​(​result​) ​==​ ​4 
+ ​        ​assert​ ​result​[​'id'​].​name​ ​==​ ​'id' 
+  
+ ​    ​def​ ​test_make_mapped_fields​(​self​): 
+ ​        ​mapping_field_instance​ ​=​ ​fields​.​MappingField​(​RandomEntity​, ​'Imapped_field'​) 
+  
+ ​        ​fields_set​ ​=​ { 
+ ​            ​'id'​: ​fields​.​IntegerField​(), 
+ ​            ​'str'​: ​fields​.​StringField​(), 
+ ​            ​'mapping'​: ​mapping_field_instance​, 
+ ​            ​'something_random'​: ​'asdf' 
+ ​        } 
+  
+ ​        ​result​ ​=​ ​base​. SwissMoteEntityMeta​.​_make_mapped_fields​(​fields_set​) 
+  
+ ​        ​# Four because there is one Field taken from RandomEntity and 'something_random' is ignored 
+ ​        ​assert​ ​len​(​result​) ​==​ ​1 
+ ​        ​assert​ ​result​[​'mapped_field'​] ​is​ ​mapping_field_instance 
+  
+ ​    ​def​ ​test_whole_class​(​self​): 
+ ​        ​assert​ ​len​(​MetaTestEntity​.​__fields__​) ​==​ ​4 
+ ​        ​assert​ ​len​(​MetaTestEntity​.​__mapped_fields__​) ​==​ ​1 
+ ​        ​assert​ ​hasattr​(​MetaTestEntity​, ​'objects'​) 
+ ​        ​assert​ ​hasattr​(​MetaTestEntity​, ​'__signature__'​) 
+ ​        ​assert​ ​isinstance​(​MetaTestEntity​.​objects​, ​base​.. SwissmoteSet​) 
+  
+ ​    ​def​ ​test_extended_class​(​self​): 
+ ​        ​assert​ ​len​(​ExtendedMetaTestEntity​.​__fields__​) ​==​ ​6 
+ ​        ​assert​ ​len​(​ExtendedMetaTestEntity​.​__mapped_fields__​) ​==​ ​2 
+  
+ ​    ​def​ ​test_mapping_fields_conflict​(​self​): 
+ ​        ​with​ ​pytest​.​raises​(​TypeError​): 
+ ​            ​class​ ​ExtendedMetaTestEntityWithConflicts​(​MetaTestEntity​): 
+ ​                ​some_other_mapped_field​ ​=​ ​fields​.​MappingField​(​RandomEntity​, ​'mapping_field'​) 
