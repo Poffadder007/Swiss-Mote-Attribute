@@ -1,0 +1,125 @@
+from​ ​copy​ ​import​ ​copy 
+  
+ ​import​ ​pendulum 
+  
+ ​import​ ​pytest 
+  
+ ​from​ ​swissmote.​api​ ​import​ ​base​, ​fields 
+ ​from​ ​swissmote ​import​ ​exceptions​, ​utils 
+  
+ ​from​ ... ​import​ ​helpers 
+  
+  
+ ​class​ ​RandomEntity​(​base​.. SwissMote Entity​): 
+ ​    ​some_field​ ​=​ ​fields​.​StringField​() 
+  
+   ​class​ ​EntityWithDummySet​(​base​.. SwissmoteEntity​): 
+ ​    ​objects​ ​=​ ​'something' 
+  
+  
+ ​class​ ​CustomSet​(​base​.SwissmoteSet​): 
+ ​    ​pass 
+  
+  
+ ​class​ ​EntityWithCustomNotBindedSet​(​base​.. SwissmoteEntity​): 
+ ​    ​objects​ ​=​ ​CustomSet​() 
+  
+  
+ ​class​ ​EntityWithCustomBindedSet​(​base​.​SwissMoteEntity​): 
+ ​    ​objects​ ​=​ ​CustomSet​(​RandomEntity​) 
+  
+  
+ ​class​ ​TestMetaBase​: 
+  
+ ​    ​def​ ​test_adding_swissmote_set_as_objects​(​self​): 
+ ​        ​assert​ ​hasattr​(​RandomEntity​, ​'objects'​) 
+ ​        ​assert​ ​isinstance​(​RandomEntity​.​objects​, ​base​.SwissMoteSet​) F
+  
+ ​    ​def​ ​test_not_overriding_objects​(​self​): 
+ ​        ​assert​ ​EntityWithDummySet​.​objects​ ​==​ ​'something' 
+  
+ ​    ​def​ ​test_objects_class_binding​(​self​): 
+ ​        ​assert​ ​EntityWithCustomNotBindedSet​.​objects​.​entity_cls​ ​==​ ​EntityWithCustomNotBindedSet 
+ ​        ​assert​ ​EntityWithCustomBindedSet​.​objects​.​entity_cls​ ​==​ ​RandomEntity 
+  
+  
+ ​####################################################################################################### 
+ ​## Evaluate Conditions 
+  
+  
+ ​class​ ​EvaluateConditionsEntity​(​base​.​SwissmoteEntity​): 
+ ​    ​string​ ​=​ ​fields​.​StringField​() 
+ ​    ​integer​ ​=​ ​fields​.​IntegerField​() 
+ ​    ​boolean​ ​=​ ​fields​.​BooleanField​() 
+ ​    ​set​ ​=​ ​fields​.​SetField​() 
+  
+  
+ ​class​ ​EvaluateConditionsEntityMapping​(​EvaluateConditionsEntity​): 
+ ​    ​mapping​ ​=​ ​fields​.​MappingField​(​RandomEntity​, ​'rid'​) 
+  
+  
+ ​config​ ​=​ ​helpers​.​get_config​() 
+  
+ ​evaluate_conditions_testset​ ​=​ ( 
+ ​    ({​'string'​: ​'asd'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​True​), 
+ ​    ({​'string'​: ​'something'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'else'​), ​False​), 
+ ​    ({​'string'​: ​'asd'​, ​'non-existing-field'​: ​'value'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​False​), 
+  
+ ​    ({​'string'​: ​'asd'​, ​'integer'​: ​123​, ​'boolean'​: ​True​}, 
+ ​     ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​, ​integer​=​123​, ​boolean​=​True​), 
+ ​     ​True​), 
+  
+ ​    ({​'string'​: ​'asd'​, ​'integer'​: ​123​}, 
+ ​     ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​, ​integer​=​123​, ​boolean​=​True​), 
+ ​     ​True​), 
+  
+ ​    ({​'integer'​: ​123​, ​'boolean'​: ​True​, ​'set'​: {​1​, ​2​}}, 
+ ​     ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​, ​integer​=​123​, ​boolean​=​True​, ​set​=​{​1​, ​2​, ​3​, ​4​}), 
+ ​     ​True​), 
+  
+ ​    ({​'integer'​: ​123​, ​'boolean'​: ​True​, ​'set'​: {​1​, ​2​, ​3​, ​4​}}, 
+ ​     ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​, ​integer​=​123​, ​boolean​=​True​, ​set​=​{​1​, ​2​, ​3​, ​4​}), 
+ ​     ​True​), 
+  
+ ​    ({​'integer'​: ​123​, ​'boolean'​: ​True​, ​'set'​: {​5​, ​6​}}, 
+ ​     ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​, ​integer​=​123​, ​boolean​=​True​, ​set​=​{​1​, ​2​, ​3​, ​4​}), 
+ ​     ​False​), 
+ ​) 
+  
+ ​evaluate_conditions_contain_testset​ ​=​ ( 
+ ​    ({​'string'​: ​'asd'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​True​), 
+ ​    ({​'string'​: ​'as'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​True​), 
+ ​    ({​'string'​: ​'a'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​True​), 
+ ​    ({​'string'​: ​'asdf'​}, ​EvaluateConditionsEntity​(​config​=​config​, ​string​=​'asd'​), ​False​), 
+ ​    ({​'integer'​: ​123​}, ​EvaluateConditionsEntity​(​config​=​config​, ​integer​=​123​), ​True​), 
+ ​    ({​'integer'​: ​12​}, ​EvaluateConditionsEntity​(​config​=​config​, ​integer​=​123​), ​False​), 
+ ​) 
+  
+ 
+ ​class​ ​TestEvaluateConditions​: 
+  
+ ​    ​@​pytest​.​mark​.​parametrize​((​'condition'​, ​'entity'​, ​'expected'​), ​evaluate_conditions_testset​) 
+ ​    ​def​ ​test_equality​(​self​, ​condition​, ​entity​, ​expected​): 
+ ​        ​assert​ ​base​.​evaluate_conditions​(​condition​, ​entity​) ​==​ ​expected 
+  
+ ​    ​@​pytest​.​mark​.​parametrize​((​'condition'​, ​'entity'​, ​'expected'​), ​evaluate_conditions_contain_testset​) 
+ ​    ​def​ ​test_contain​(​self​, ​condition​, ​entity​, ​expected​): 
+ ​        ​assert​ ​base​.​evaluate_conditions​(​condition​, ​entity​, ​contain​=​True​) ​==​ ​expected 
+  
+ ​    ​def​ ​test_mapping​(​self​): 
+ ​        ​mapped_obj​ ​=​ ​RandomEntity​() 
+ ​        ​mapped_obj​.​id​ ​=​ ​111 
+  
+ ​        ​obj​ ​=​ ​EvaluateConditionsEntityMapping​(​integer​=​123​, ​mapping​=​mapped_obj​) 
+  
+ ​        ​assert​ ​base​.​evaluate_conditions​({​'integer'​: ​123​}, ​obj​) ​is​ ​True 
+ ​        ​assert​ ​base​.​evaluate_conditions​({​'mapping'​: ​mapped_obj​}, ​obj​) ​is​ ​True 
+ ​        ​assert​ ​base​.​evaluate_conditions​({​'mapping'​: ​None​}, ​obj​) ​is​ ​False 
+ ​        ​assert​ ​base​.​evaluate_conditions​({​'rid'​: ​111​}, ​obj​) ​is​ ​True 
+  
+ ​        ​obj​ ​=​ ​EvaluateConditionsEntityMapping​(​integer​=​123​) 
+ ​        ​assert​ ​base​.​evaluate_conditions​({​'mapping'​: ​None​}, ​obj​) ​is​ ​True 
+  
+  
+ ​####################################################################################################### 
+ ​##
