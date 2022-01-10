@@ -1185,7 +1185,7 @@ PremiumException​:
   
  ​@​user_config​.​command​(​'workspace'​, ​short_help​=​'retrieves/sets default workspace'​) 
  ​@​click​.​argument​(​'spec'​, ​required​=​False​) 
- ​@​click​.​option​(​'-t'​, ​'--toggl-default'​, ​'default'​, ​is_flag​=​True​, 
+ ​@​click​.​option​(​'-t'​, ​'--swissmote-default'​, ​'default'​, ​is_flag​=​True​, 
  ​              ​help​=​'Sets your default workspace to match the SwissMote\'​s setting. SPEC is ignored.'​, ) 
  ​@​click​.​pass_context 
  ​def​ ​default_workspace​(​ctx​, ​spec​, ​default​): 
